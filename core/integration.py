@@ -76,12 +76,15 @@ def stream_chat(question: str, system_prompt: str | None = None) -> Iterator[str
 def embed(text: str, model: str | None = None) -> list[float]:
     """Generate an embedding vector using Ollama's native /api/embed endpoint.
 
-    Works with any Ollama model (including gemma3) — no dedicated embedding
-    model required. The base_url /v1 suffix is stripped to reach the Ollama
-    host-level API.
+    Uses LLM_EMBED_BASE_URL if set, otherwise falls back to LLM_BASE_URL.
+    This allows chat and embeddings to use different providers — e.g. OpenRouter
+    for chat and a local/remote Ollama instance for nomic-embed-text.
+
+    The base_url /v1 suffix is stripped to reach the Ollama host-level API.
     """
     config = get_llm_config()
-    base = config["base_url"].removesuffix("/v1")
+    embed_base_url = settings.LLM_EMBED_BASE_URL or config["base_url"]
+    base = embed_base_url.removesuffix("/v1")
     model_name = model or config["embedding_model"]
 
     payload = json.dumps({"model": model_name, "input": text}).encode()

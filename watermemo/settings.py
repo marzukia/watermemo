@@ -94,3 +94,10 @@ LLM_BASE_URL = config("LLM_BASE_URL", default="http://localhost:11434/v1")
 LLM_API_KEY = config("LLM_API_KEY", default="ollama")
 LLM_MODEL = config("LLM_MODEL", default="gemma3:latest")
 LLM_EMBEDDING_MODEL = config("LLM_EMBEDDING_MODEL", default="nomic-embed-text")
+
+# Optional separate Ollama endpoint for embeddings.
+# Useful when chat uses a non-Ollama provider (e.g. OpenRouter) but embeddings
+# still need to hit an Ollama instance for nomic-embed-text.
+# Falls back to LLM_BASE_URL / LLM_API_KEY if not set.
+LLM_EMBED_BASE_URL = config("LLM_EMBED_BASE_URL", default="")
+LLM_EMBED_API_KEY = config("LLM_EMBED_API_KEY", default="")
