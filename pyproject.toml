@@ -1,0 +1,30 @@
+[project]
+name = "watermemo"
+version = "0.2.0"
+description = "A memory layer for LLMs — stores, distills, and recalls semantic memories via vector similarity."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=5.2",
+    "django-ninja>=1.4.0",
+    "gunicorn>=23.0.0",
+    "uvicorn[standard]>=0.34.0",
+    "openai>=1.68.2",
+    "pgvector>=0.4.2",
+    "psycopg[binary]>=3.2.0",
+    "python-decouple>=3.8",
+    "ruff>=0.15.7",
+    "httpx>=0.28.1",
+    "certifi>=2026.2.25",
+]
+
+[dependency-groups]
+dev = [
+    "django-stubs[compatible-mypy]>=5.1.0",
+    "pytest>=8.0",
+    "pytest-django>=4.9",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "watermemo.settings"
+pythonpath = ["."]
