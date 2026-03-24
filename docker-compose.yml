@@ -1,0 +1,50 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-memorai}
+      POSTGRES_USER: ${DB_USER:-memorai}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-memorai} -d ${DB_NAME:-memorai}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG:-False}
+      DB_NAME: ${DB_NAME:-memorai}
+      DB_USER: ${DB_USER:-memorai}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-ollama}
+      LLM_MODEL: ${LLM_MODEL:-gemma3:latest}
+      LLM_EMBEDDING_MODEL: ${LLM_EMBEDDING_MODEL:-nomic-embed-text}
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "
+        uv run python manage.py migrate --noinput &&
+        uv run gunicorn memorai.asgi:application
+          -k uvicorn.workers.UvicornWorker
+          --bind 0.0.0.0:8000
+          --workers 2
+          --timeout 120
+      "
+
+volumes:
+  postgres_data:
