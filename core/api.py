@@ -27,7 +27,7 @@ from .schemas import (
     SearchResultOut,
 )
 
-api = NinjaAPI(title="MemorAI API")
+api = NinjaAPI(title="watermemo API")
 memory_router = Router()
 distillation_router = Router()
 

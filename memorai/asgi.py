@@ -2,6 +2,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "memorai.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "watermemo.settings")
 
 application = get_asgi_application()

@@ -1,11 +1,11 @@
-# memorai
+# watermemo
 
 A memory layer for LLMs. Stores raw content, auto-generates semantic distillations via an LLM, and retrieves relevant memories using vector similarity with temporal decay.
 
 ## Architecture
 
 ```
-memorai/          ← Django project package (settings, urls, wsgi, asgi)
+watermemo/          ← Django project package (settings, urls, wsgi, asgi)
 core/             ← main app
   models.py       ← Memory, Distillation (pgvector embeddings + FTS)
   api.py          ← REST endpoints (Django Ninja)
@@ -138,7 +138,7 @@ import requests
 
 class Tools:
     def __init__(self):
-        self.base_url = "http://your-memorai-host:8000/api"
+        self.base_url = "http://your-watermemo-host:8000/api"
         self.headers = {"Authorization": "Bearer your-secret-token"}
 
     def store_memory(self, content: str) -> str:
@@ -187,12 +187,12 @@ Tool above.
 Go to **Workspace → Functions → + New Function**, set type to **Filter**, and
 paste the contents of [`open_webui/filter.py`](open_webui/filter.py).
 
-Configure the valve `base_url` to point at your memorai instance
+Configure the valve `base_url` to point at your watermemo instance
 (`http://web:8000/api` if both run in the same Docker network).
 
 | Valve              | Default               | Description                                |
 | ------------------ | --------------------- | ------------------------------------------ |
-| `base_url`         | `http://web:8000/api` | memorai API root                           |
+| `base_url`         | `http://web:8000/api` | watermemo API root                           |
 | `recall_limit`     | `5`                   | Max memories injected per prompt           |
 | `recall_threshold` | `0.5`                 | Cosine distance cut-off                    |
 | `store_exchanges`  | `true`                | Store user+assistant turn after each reply |
@@ -214,7 +214,7 @@ Configure the valve `base_url` to point at your memorai instance
 ## Structure
 
 ```
-memorai/          ← Django project package (settings, urls, wsgi, asgi)
+watermemo/          ← Django project package (settings, urls, wsgi, asgi)
 core/             ← main app (models, schemas, api, admin, migrations)
 manage.py
 ```

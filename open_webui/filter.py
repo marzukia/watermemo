@@ -1,5 +1,5 @@
 """
-memorai Open WebUI Filter
+watermemo Open WebUI Filter
 =========================
 Paste the contents of this file into Open WebUI:
   Workspace → Functions → + New Function → type: Filter

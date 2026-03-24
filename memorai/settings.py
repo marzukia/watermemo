@@ -38,7 +38,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "memorai.urls"
+ROOT_URLCONF = "watermemo.urls"
 
 TEMPLATES = [
     {
@@ -56,13 +56,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "memorai.wsgi.application"
+WSGI_APPLICATION = "watermemo.wsgi.application"
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="memorai"),
-        "USER": config("DB_USER", default="memorai"),
+        "NAME": config("DB_NAME", default="watermemo"),
+        "USER": config("DB_USER", default="watermemo"),
         "PASSWORD": config("DB_PASSWORD", default="postgres"),
         "HOST": config("DB_HOST", default="localhost"),
         "PORT": config("DB_PORT", default="5432"),
