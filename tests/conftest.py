@@ -5,14 +5,13 @@ from unittest.mock import patch
 @pytest.fixture(autouse=True)
 def _no_llm_calls(monkeypatch):
     """Stub out LLM and embedding calls."""
-    monkeypatch.setattr(
-        "core.integration.chat",
-        lambda question, system_prompt=None: "Mocked distillation summary.",
-    )
-    monkeypatch.setattr(
-        "core.integration.embed",
-        lambda text, model=None: [0.1] * 768,
-    )
+    _fake_chat = lambda question, system_prompt=None: "Mocked distillation summary."
+    _fake_embed = lambda text, model=None: [0.1] * 768
+
+    monkeypatch.setattr("core.integration.chat", _fake_chat)
+    monkeypatch.setattr("core.integration.embed", _fake_embed)
+    # signals.py imports embed at module level, so patch that reference too
+    monkeypatch.setattr("core.signals.embed", _fake_embed)
 
 
 @pytest.fixture
