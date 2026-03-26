@@ -23,6 +23,8 @@ dev = [
     "django-stubs[compatible-mypy]>=5.1.0",
     "pytest>=8.0",
     "pytest-django>=4.9",
+    "sphinx>=8.0",
+    "sphinx-rtd-theme>=3.0",
 ]
 
 [tool.pytest.ini_options]
