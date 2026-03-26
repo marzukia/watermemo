@@ -21,9 +21,6 @@ COPY . .
 # Install the project itself
 RUN uv sync --frozen --no-dev
 
-# Collect static files
-RUN uv run python manage.py collectstatic --noinput
-
 EXPOSE 8000
 
 CMD ["uv", "run", "gunicorn", "watermemo.asgi:application", \
