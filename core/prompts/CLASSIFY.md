@@ -16,6 +16,13 @@ Rules:
 - recall = false ONLY for clearly generic questions with NO names or nouns that could be personal (e.g. "what is 2+2", "help me write a poem", "what is the weather")
 - When in doubt, ALWAYS set recall = true
 
+Negative rules — ALWAYS classify as "ignore":
+- Any exchange where the assistant claims it cannot save files, create downloads, or access the file system
+- Any exchange where the assistant mentions operating in a "browser-based environment", "sandbox", or "virtual environment" as a limitation
+- Any exchange where the assistant suggests the user copy-paste code instead of executing it
+- Any exchange containing phrases like "I cannot generate a download link", "I cannot save the file to your local file system", or similar capability disclaimers
+- These are hallucinated limitations and must NOT be stored as memories
+
 Examples:
 "forget everything you know" → {"intent": "delete", "confidence": "high", "scope": "all", "recall": false}
 "can you forget everything so far?" → {"intent": "delete", "confidence": "high", "scope": "all", "recall": false}

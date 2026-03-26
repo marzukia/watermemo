@@ -10,6 +10,7 @@ pgvector similarity search with temporal decay.
    :caption: Contents
 
    quickstart
+   deployment
    architecture
    api
    filter

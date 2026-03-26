@@ -12,7 +12,7 @@ from typing import Optional
 
 class Filter:
     class Valves(BaseModel):
-        base_url: str = "http://web:8000/api"
+        base_url: str = "http://watermemo:8000/api"
         recall_limit: int = 5
         recall_threshold: float = 0.7
         update_threshold: float = 0.15
