@@ -1,5 +1,6 @@
 import json
 import math
+import secrets
 import tomllib
 from http import HTTPStatus
 from pathlib import Path
@@ -33,8 +34,10 @@ from .schemas import (
 class _ApiKeyAuth(HttpBearer):
     """Bearer-token authentication.
 
-    When ``settings.API_KEY`` is empty the check is skipped so the service
-    stays backwards-compatible with unauthenticated (local/dev) deployments.
+    Set ``API_KEY`` in the environment (or .env) to a non-empty string to
+    require a ``Authorization: Bearer <key>`` header on every protected
+    endpoint.  When ``API_KEY`` is empty (the default) all traffic is allowed,
+    keeping local/dev deployments backwards-compatible.
     """
 
     def __call__(self, request):
@@ -45,7 +48,8 @@ class _ApiKeyAuth(HttpBearer):
 
     def authenticate(self, request, token: str) -> str | None:
         expected = getattr(settings, "API_KEY", "")
-        if token == expected:
+        # Use constant-time comparison to prevent timing attacks.
+        if secrets.compare_digest(token, expected):
             return token
         return None
 

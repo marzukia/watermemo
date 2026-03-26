@@ -31,6 +31,8 @@ class TestLoadPromptPathTraversal:
     def test_null_byte_blocked(self):
         from core.integration import load_prompt
 
+        # Null bytes in filenames are rejected by the OS (OSError/ValueError);
+        # either indicates the path traversal attempt was blocked.
         with pytest.raises((ValueError, OSError)):
             load_prompt("DISTILLATION\x00../settings")
 

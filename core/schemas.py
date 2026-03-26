@@ -4,7 +4,9 @@ from typing import Annotated
 from ninja import Schema
 from pydantic import Field
 
-# Maximum length for user-supplied text content (64 KiB of UTF-8 characters).
+# Maximum number of characters for user-supplied text content.
+# This is a character count (not a byte limit); multi-byte UTF-8 characters
+# count as one character each.
 MAX_CONTENT_LEN = 65_536
 # Maximum length for user_id values.
 MAX_USER_ID_LEN = 255
