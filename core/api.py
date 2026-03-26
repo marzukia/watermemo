@@ -4,9 +4,11 @@ import tomllib
 from http import HTTPStatus
 from pathlib import Path
 
+from django.conf import settings
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from ninja import NinjaAPI, Router
+from ninja.security import HttpBearer
 from pgvector.django import CosineDistance
 
 from .integration import load_prompt
@@ -27,12 +29,35 @@ from .schemas import (
     SearchResultOut,
 )
 
-api = NinjaAPI(title="watermemo API")
+
+class _ApiKeyAuth(HttpBearer):
+    """Bearer-token authentication.
+
+    When ``settings.API_KEY`` is empty the check is skipped so the service
+    stays backwards-compatible with unauthenticated (local/dev) deployments.
+    """
+
+    def __call__(self, request):
+        if not getattr(settings, "API_KEY", ""):
+            # No key configured – allow all traffic.
+            return "anonymous"
+        return super().__call__(request)
+
+    def authenticate(self, request, token: str) -> str | None:
+        expected = getattr(settings, "API_KEY", "")
+        if token == expected:
+            return token
+        return None
+
+
+_auth = _ApiKeyAuth()
+
+api = NinjaAPI(title="watermemo API", auth=_auth)
 memory_router = Router()
 distillation_router = Router()
 
 
-@api.get("/health")
+@api.get("/health", auth=None)
 def health(request) -> dict[str, str]:
     from django.db import connection
 

@@ -10,7 +10,10 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 
 def load_prompt(name: str) -> str:
-    return (PROMPTS_DIR / f"{name}.md").read_text()
+    resolved = (PROMPTS_DIR / f"{name}.md").resolve()
+    if not resolved.is_relative_to(PROMPTS_DIR.resolve()):
+        raise ValueError(f"Invalid prompt name: {name!r}")
+    return resolved.read_text()
 
 
 def get_llm_config() -> dict:

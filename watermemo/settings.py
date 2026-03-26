@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY", default="change-me-in-production")
 
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
@@ -89,6 +89,11 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Optional API key that protects all /api/* endpoints.
+# Leave blank (the default) to run without authentication (suitable for
+# trusted-network / local-only deployments).
+API_KEY = config("API_KEY", default="")
 
 # LLM settings (override in .env)
 LLM_BASE_URL = config("LLM_BASE_URL", default="http://localhost:11434/v1")

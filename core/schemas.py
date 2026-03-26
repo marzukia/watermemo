@@ -1,14 +1,25 @@
 from datetime import datetime
+from typing import Annotated
 
 from ninja import Schema
+from pydantic import Field
+
+# Maximum length for user-supplied text content (64 KiB of UTF-8 characters).
+MAX_CONTENT_LEN = 65_536
+# Maximum length for user_id values.
+MAX_USER_ID_LEN = 255
+
+_Content = Annotated[str, Field(max_length=MAX_CONTENT_LEN)]
+_UserId = Annotated[str, Field(max_length=MAX_USER_ID_LEN)]
+_Query = Annotated[str, Field(max_length=MAX_CONTENT_LEN)]
 
 
 # Memory
 
 
 class MemoryIn(Schema):
-    content: str
-    user_id: str = ""
+    content: _Content
+    user_id: _UserId = ""
 
 
 class MemoryOut(Schema):
@@ -20,14 +31,14 @@ class MemoryOut(Schema):
 
 
 class MemoryUpdate(Schema):
-    content: str | None = None
+    content: _Content | None = None
 
 
 # Distillation
 
 
 class DistillationIn(Schema):
-    content: str
+    content: _Content
     memory_id: int
 
 
@@ -41,17 +52,17 @@ class DistillationOut(Schema):
 
 
 class DistillationUpdate(Schema):
-    content: str | None = None
+    content: _Content | None = None
 
 
 # Search
 
 
 class SearchQuery(Schema):
-    query: str
+    query: _Query
     limit: int = 10
     threshold: float = 0.5  # cosine distance: 0 = identical, 2 = opposite
-    user_id: str = ""
+    user_id: _UserId = ""
 
 
 class SearchResultOut(Schema):
@@ -66,7 +77,7 @@ class SearchResultOut(Schema):
 
 
 class ClassifyQuery(Schema):
-    text: str
+    text: _Query
 
 
 class ClassifyOut(Schema):
@@ -80,11 +91,11 @@ class ClassifyOut(Schema):
 
 
 class RecallQuery(Schema):
-    query: str
+    query: _Query
     limit: int = 5
     threshold: float = 0.5
     decay_half_life_days: float = 30.0
-    user_id: str = ""
+    user_id: _UserId = ""
     """Half-life in days for exponential age decay on cosine distance.
     Set to 0 to disable."""
 
