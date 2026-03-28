@@ -53,10 +53,12 @@ def health(request) -> dict[str, str]:
 
 
 @memory_router.get("/", response=list[MemoryOut])
-def list_memories(request, user_id: str = "") -> list[Memory]:
+def list_memories(request, user_id: str = "", limit: int = 0) -> list[Memory]:
     qs = Memory.objects.all()
     if user_id:
         qs = qs.filter(user_id=user_id)
+    if limit > 0:
+        qs = qs[:limit]
     return list(qs)
 
 
