@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0010_distillation_is_core"),
+        ("core", "0011_memory_user_id"),
     ]
 
     operations = [
