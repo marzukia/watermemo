@@ -74,23 +74,39 @@ class TestBuildRecallQuery:
 
 
 class TestDeleteDetection:
-    def test_forget_everything(self, f):
-        is_del, scope = f._looks_like_delete("Please forget everything")
-        assert is_del is True
+    @patch("requests.post")
+    def test_classify_delete_all(self, mock_post, f):
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = {"intent": "delete", "confidence": "high", "scope": "all", "recall": False}
+        mock_post.return_value = mock_resp
+        intent, scope = f._classify_intent("Please forget everything")
+        assert intent == "delete"
         assert scope == "all"
 
-    def test_delete_specific(self, f):
-        is_del, scope = f._looks_like_delete("Can you forget what I said about cats?")
-        assert is_del is True
+    @patch("requests.post")
+    def test_classify_delete_specific(self, mock_post, f):
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = {"intent": "delete", "confidence": "high", "scope": "specific", "recall": True}
+        mock_post.return_value = mock_resp
+        intent, scope = f._classify_intent("Can you forget what I said about cats?")
+        assert intent == "delete"
         assert scope == "specific"
 
-    def test_normal_message(self, f):
-        is_del, scope = f._looks_like_delete("What's the weather like?")
-        assert is_del is False
+    @patch("requests.post")
+    def test_classify_normal_message(self, mock_post, f):
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = {"intent": "ignore", "confidence": "high", "scope": "specific", "recall": False}
+        mock_post.return_value = mock_resp
+        intent, scope = f._classify_intent("What's the weather like?")
+        assert intent == "ignore"
 
-    def test_case_insensitive(self, f):
-        is_del, _ = f._looks_like_delete("DELETE ALL MEMORIES")
-        assert is_del is True
+    @patch("requests.post", side_effect=Exception("timeout"))
+    def test_classify_api_error_falls_back_to_ignore(self, mock_post, f):
+        intent, scope = f._classify_intent("forget everything")
+        assert intent == "ignore"
 
 
 class TestInlet:
@@ -169,11 +185,21 @@ class TestInlet:
 class TestOutlet:
     @patch("requests.post")
     def test_outlet_stores_exchange(self, mock_post, f):
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = []  # no near-duplicates
-        mock_resp.raise_for_status = MagicMock()
-        mock_post.return_value = mock_resp
+        classify_resp = MagicMock()
+        classify_resp.raise_for_status = MagicMock()
+        classify_resp.json.return_value = {"intent": "ignore", "confidence": "high", "scope": "specific", "recall": False}
+
+        dedup_resp = MagicMock()
+        dedup_resp.status_code = 200
+        dedup_resp.raise_for_status = MagicMock()
+        dedup_resp.json.return_value = []  # no near-duplicates
+
+        create_resp = MagicMock()
+        create_resp.status_code = 201
+        create_resp.raise_for_status = MagicMock()
+        create_resp.json.return_value = {"id": 1}
+
+        mock_post.side_effect = [classify_resp, dedup_resp, create_resp]
 
         body = {
             "messages": [
@@ -183,9 +209,9 @@ class TestOutlet:
         }
         f.outlet(body, {"id": "u1"})
 
-        # Should have made 2 calls: search + create
-        assert mock_post.call_count == 2
-        create_call = mock_post.call_args_list[1]
+        # Should have made 3 calls: classify + dedup search + create
+        assert mock_post.call_count == 3
+        create_call = mock_post.call_args_list[2]
         payload = create_call.kwargs.get("json") or create_call[1].get("json")
         assert "Python" in payload["content"]
         assert payload["user_id"] == "u1"
@@ -193,6 +219,11 @@ class TestOutlet:
     @patch("requests.post")
     @patch("requests.delete")
     def test_outlet_delete_all(self, mock_delete, mock_post, f):
+        classify_resp = MagicMock()
+        classify_resp.raise_for_status = MagicMock()
+        classify_resp.json.return_value = {"intent": "delete", "confidence": "high", "scope": "all", "recall": False}
+        mock_post.return_value = classify_resp
+
         body = {
             "messages": [
                 {"role": "user", "content": "forget everything"},
@@ -216,14 +247,23 @@ class TestOutlet:
             ]
         }
         with patch("requests.post") as mock_post:
-            mock_resp = MagicMock()
-            mock_resp.json.return_value = []
-            mock_resp.raise_for_status = MagicMock()
-            mock_post.return_value = mock_resp
+            classify_resp = MagicMock()
+            classify_resp.raise_for_status = MagicMock()
+            classify_resp.json.return_value = {"intent": "ignore", "confidence": "high", "scope": "specific", "recall": False}
+
+            dedup_resp = MagicMock()
+            dedup_resp.raise_for_status = MagicMock()
+            dedup_resp.json.return_value = []
+
+            create_resp = MagicMock()
+            create_resp.raise_for_status = MagicMock()
+            create_resp.json.return_value = {"id": 1}
+
+            mock_post.side_effect = [classify_resp, dedup_resp, create_resp]
 
             f.outlet(body, {"id": "u1"})
 
-            create_call = mock_post.call_args_list[1]
+            create_call = mock_post.call_args_list[2]
             payload = create_call.kwargs.get("json") or create_call[1].get("json")
             # Ensure stored content is within bounds
             assert len(payload["content"]) < 2200
