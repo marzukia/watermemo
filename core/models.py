@@ -41,7 +41,7 @@ class DistillationManager(models.Manager):
         """Distill a Memory via the LLM."""
         from core.integration import load_prompt
 
-        mem, _ = Memory.objects.get_or_create(content=memory.content)
+        mem = memory
         system_prompt = load_prompt("DISTILLATION")
         distillation_text = chat(memory.content, system_prompt=system_prompt)
 
