@@ -104,28 +104,20 @@ class Filter:
 
         return body
 
-    _DELETE_PHRASES = (
-        "forget",
-        "delete",
-        "remove memory",
-        "erase memory",
-        "clear memory",
-        "wipe memory",
-        "forget everything",
-        "delete all memories",
-        "clear all memories",
-    )
-
-    def _looks_like_delete(self, text: str) -> tuple[bool, str]:
-        """Keyword-based delete intent detection. Returns (is_delete, scope)."""
-        lower = text.lower().strip()
-        for phrase in ("forget everything", "delete all memories", "clear all memories", "wipe memory"):
-            if phrase in lower:
-                return True, "all"
-        for phrase in self._DELETE_PHRASES:
-            if phrase in lower:
-                return True, "specific"
-        return False, "specific"
+    def _classify_intent(self, text: str) -> tuple[str, str]:
+        """Use the /classify LLM endpoint to detect memory intent. Returns (intent, scope)."""
+        try:
+            res = requests.post(
+                f"{self.valves.base_url}/classify",
+                json={"text": text},
+                timeout=10,
+            )
+            res.raise_for_status()
+            result = res.json()
+            return result.get("intent", "ignore"), result.get("scope", "specific")
+        except Exception:
+            # Fall back to safe default — no delete, no store
+            return "ignore", "specific"
 
     def outlet(self, body: dict, __user__: Optional[dict] = None) -> dict:
         if not self.valves.enabled or not self.valves.store_exchanges:
@@ -145,9 +137,9 @@ class Filter:
             asst_text = asst_text[:2000] + "…"
         content = f"User: {user_text}\nAssistant: {asst_text}"
 
-        is_delete, scope = self._looks_like_delete(user_text)
+        intent, scope = self._classify_intent(user_text)
 
-        if is_delete:
+        if intent == "delete":
             try:
                 if scope == "all":
                     requests.delete(
